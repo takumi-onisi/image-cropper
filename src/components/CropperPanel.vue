@@ -16,7 +16,7 @@ const initCropper = () => {
 
   const template = `
   <cropper-canvas background>
-    <cropper-image translatable scalable action="move">
+    <cropper-image translatable scalable>
     </cropper-image>
     <cropper-handle action="move" plain></cropper-handle>
 
