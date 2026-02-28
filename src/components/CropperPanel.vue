@@ -65,6 +65,21 @@ const saveConfig = () => {
   console.log(imageData);
 };
 
+const testResultUrl = ref(null);
+
+const confirmCrop = async () => {
+  if (!cropper) return;
+
+  const cropperSelection = cropper.getCropperSelection();
+  if (!cropperSelection) return;
+
+  const canvas = await cropperSelection.$toCanvas();
+
+  if(!canvas) return;
+  testResultUrl.value = canvas.toDataURL("image/png");
+
+};
+
 // 一枚目の画像が読み込まれたら初期化
 watch(
   firstImage,
@@ -79,7 +94,12 @@ watch(
 <template>
   <div v-if="firstImage" class="cropper-container">
     <img ref="imageElement" :src="firstImage.previewUrl" class="cropper-img" />
-    <button @click="saveConfig">切り抜き</button>
+    <button @click="confirmCrop">設定を確定してテスト切り抜き</button>
+  </div>
+
+  <div v-if="testResultUrl" class="test-preview">
+    <h3>テスト切り抜き結果:</h3>
+    <img :src="testResultUrl" style="border: 2px solid #2ecc71" />
   </div>
 </template>
 
