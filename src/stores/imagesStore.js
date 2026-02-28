@@ -3,6 +3,12 @@ import { ref } from "vue";
 
 export const useImagesStore = defineStore("images", () => {
   const fileList = ref([]);
+  const globalConfig = ref({
+    selection: { x: 0, y: 0, width: 0, height: 0 },
+    transform: [1, 0, 0, 1, 0, 0],
+    aspectRatio: null,
+    format: "png",
+  });
 
   const addFiles = (files) => {
     // files は FileList という特殊な型なので、Array.fromで配列化が必要
@@ -27,9 +33,29 @@ export const useImagesStore = defineStore("images", () => {
     fileList.value = []; // ファイルリストをクリア
   };
 
+  const setGlobalConfig = (config) => {
+    const newSelection = { ...config.selection };
+    const newTransform = [...config.transform];
+
+    // グローバル設定(マスター)を更新
+    globalConfig.value.selection = newSelection;
+    globalConfig.value.transform = newTransform;
+
+    // 画像それぞれに切り抜き用の設定を持たせる
+    fileList.value.forEach((file) => {
+      // 1つのファイルの切り抜き設定を編集しても他のファイルに影響が出ないようにする。
+      file.globalConfig = {
+        selection: { ...newSelection },
+        transform: [...newTransform],
+        isModified: false,
+      };
+    });
+  };
+
   return {
     fileList,
     addFiles,
     clearFiles,
+    setGlobalConfig,
   };
 });
