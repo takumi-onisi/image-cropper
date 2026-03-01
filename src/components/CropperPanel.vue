@@ -107,7 +107,9 @@ const generateCanvas = async (fileItem) => {
       cropperImage.$setTransform(...fileItem.cropConfig.transform);
       
       const canvas = await cropperSelection.$toCanvas();
+      // 正常終了：後片付け
       tempCropper.destroy();
+      document.body.removeChild(container);
       resolve(canvas);
     };
 
