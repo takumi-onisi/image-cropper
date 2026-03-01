@@ -1,6 +1,7 @@
 <script setup>
 import { useTemplateRef, ref, computed, onMounted, watch } from "vue";
 import { useImagesStore } from "../stores/imagesStore";
+import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
 import Cropper from "cropperjs";
 
 const imageStore = useImagesStore();
@@ -14,33 +15,7 @@ const initCropper = () => {
   if (cropper) cropper.destroy();
   if (!imageElement.value) return;
 
-  const template = `
-  <cropper-canvas background>
-    <cropper-image translatable scalable>
-    </cropper-image>
-    <cropper-handle action="move" plain></cropper-handle>
-
-    <cropper-shade></cropper-shade>
-
-    <cropper-selection initial-coverage="0.5" movable resizable>
-      <cropper-grid role="grid" bordered covered></cropper-grid>
-      <cropper-crosshair centered></cropper-crosshair>
-
-      <cropper-handle action="move" plain></cropper-handle>
-
-      <cropper-handle action="n-resize"></cropper-handle>
-      <cropper-handle action="e-resize"></cropper-handle>
-      <cropper-handle action="s-resize"></cropper-handle>
-      <cropper-handle action="w-resize"></cropper-handle>
-      <cropper-handle action="ne-resize"></cropper-handle>
-      <cropper-handle action="nw-resize"></cropper-handle>
-      <cropper-handle action="se-resize"></cropper-handle>
-      <cropper-handle action="sw-resize"></cropper-handle>
-    </cropper-selection>
-  </cropper-canvas>
-  `;
-
-  cropper = new Cropper(imageElement.value, { template });
+  cropper = new Cropper(imageElement.value, { template: CROPPER_TEMPLATE });
 };
 
 const saveConfig = () => {
@@ -112,33 +87,8 @@ const generateCanvas = async (fileItem) => {
     reject(new Error(`画僧の読みに失敗しました。: ${fileItem.name}`));
   };
 
-  const template = `
-  <cropper-canvas background>
-    <cropper-image translatable scalable>
-    </cropper-image>
-    <cropper-handle action="move" plain></cropper-handle>
-
-    <cropper-shade></cropper-shade>
-
-    <cropper-selection initial-coverage="0.5" movable resizable>
-      <cropper-grid role="grid" bordered covered></cropper-grid>
-      <cropper-crosshair centered></cropper-crosshair>
-
-      <cropper-handle action="move" plain></cropper-handle>
-
-      <cropper-handle action="n-resize"></cropper-handle>
-      <cropper-handle action="e-resize"></cropper-handle>
-      <cropper-handle action="s-resize"></cropper-handle>
-      <cropper-handle action="w-resize"></cropper-handle>
-      <cropper-handle action="ne-resize"></cropper-handle>
-      <cropper-handle action="nw-resize"></cropper-handle>
-      <cropper-handle action="se-resize"></cropper-handle>
-      <cropper-handle action="sw-resize"></cropper-handle>
-    </cropper-selection>
-  </cropper-canvas>
-  `;
   const tempCropper = new Cropper(img, {
-    template,
+    template: CROPPER_TEMPLATE,
   });
 
   await tempCropper.$ready;
@@ -153,7 +103,7 @@ const generateCanvas = async (fileItem) => {
   cropperSelection.height = fileItem.cropConfig.selection.height;
   cropperImage.$setTransform(...fileItem.cropConfig.transform);
 
-  await new Promise(resolve => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
   const canvas = await cropperSelection.$toCanvas();
 
   tempCropper.destroy();
