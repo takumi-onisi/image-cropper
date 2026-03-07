@@ -14,6 +14,23 @@ let cropper = null;
 // 一枚目の画像を取得
 const firstImage = computed(() => imageStore.fileList[0]);
 
+const rect = ref({ x: 0, y: 0, width: 0, height: 0 });
+
+// 2. 数値入力から Cropper（枠）へ
+const updateSelection = () => {
+  const selection = cropper.getCropperSelection();
+  if (selection) {
+    // フォームの値をCropperに代入
+    selection.x = rect.value.x;
+    selection.y = rect.value.y;
+    selection.width = rect.value.width;
+    selection.height = rect.value.height;
+
+    // Cropper v2の重要なメソッド：プロパティの変更を画面に強制反映させる
+    selection.$change();
+  }
+};
+
 const initCropper = () => {
   if (cropper) cropper.destroy();
   if (!imageElement.value) return;
@@ -177,6 +194,26 @@ watch(
 </script>
 
 <template>
+
+  <div class="property-bar">
+  <div class="input-group">
+    <label>X:</label>
+    <input type="number" v-model.number="rect.x" @input="updateSelection">
+  </div>
+  <div class="input-group">
+    <label>Y:</label>
+    <input type="number" v-model.number="rect.y" @input="updateSelection">
+  </div>
+  <div class="input-group">
+    <label>幅:</label>
+    <input type="number" v-model.number="rect.width" @input="updateSelection">
+  </div>
+  <div class="input-group">
+    <label>高さ:</label>
+    <input type="number" v-model.number="rect.height" @input="updateSelection">
+  </div>
+</div>
+
   <div v-if="firstImage" class="cropper-container">
     <img ref="imageElement" :src="firstImage.previewUrl" class="cropper-img" />
     <button @click="confirmCrop">設定を確定してテスト切り抜き</button>
