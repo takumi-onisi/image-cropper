@@ -8,8 +8,6 @@ import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
  * @returns {Promise<HTMLCanvasElement>} 切り抜かれたCanvas要素
  */
 export async function performCropping(imgElement, cropConfig) {
-   console.log('Target Element:', imgElement); // <img> が表示されるか
-  console.log('Is in DOM:', document.body.contains(imgElement)); // true になるか
   // Cropperのインスタンス生成
   const tempCropper = new Cropper(imgElement, { template: CROPPER_TEMPLATE });
 
