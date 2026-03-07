@@ -5,6 +5,7 @@ import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import Cropper from "cropperjs";
+import { performCropping } from "../utils/imageProcessor";
 
 const imageStore = useImagesStore();
 const imageElement = useTemplateRef("imageElement");
@@ -66,62 +67,34 @@ const confirmCrop = async () => {
 };
 
 const generateCanvas = async (fileItem) => {
-  if (!fileItem || !fileItem.previewUrl) {
-    return new Error("ファイルデータが不正です");
-  }
+  if (!fileItem?.previewUrl) throw new Error("不正なデータ");
 
-  // メモリ上に仮想のCropperを作成する
+  // DOMの構築（副作用）
   const container = document.createElement("div");
   container.style.position = "fixed";
   container.style.left = "-9999px"; // 画面外へ飛ばす
   container.style.top = "0";
   container.style.opacity = "0";
   document.body.appendChild(container);
+  // コンテナとimg要素を実際のdomに追加しないとcropperが正常に動作しない
+  const img = document.createElement("img");
+  container.appendChild(img);
 
-  // 画像の読み込み完了を待つ Promise を作成
-  return new Promise(async (resolve, reject) => {
-    const img = document.createElement("img");
-    container.appendChild(img);
-    img.onerror = () => {
-      document.body.removeChild(container);
-      reject(new Error(`画像の読み込みに失敗しました: ${fileItem.name}`));
-    };
-    // 読み込み成功時のメインロジック
-    img.onload = async () => {
-      try {
-        const tempCropper = new Cropper(img, {
-          template: CROPPER_TEMPLATE,
-        });
+  try {
+    // 画像読み込みのPromiseをラップ
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () =>
+        reject(new Error(`画像読み込み失敗: ${fileItem.name}`));
+      img.src = fileItem.previewUrl; // 画像の読み込み開始
+    });
 
-        await tempCropper.$ready;
-
-        const cropperSelection = tempCropper.getCropperSelection();
-        const cropperImage = tempCropper.getCropperImage();
-
-        // 各ファイルごとの切り抜き設定を注入
-        cropperSelection.x = fileItem.cropConfig.selection.x;
-        cropperSelection.y = fileItem.cropConfig.selection.y;
-        cropperSelection.width = fileItem.cropConfig.selection.width;
-        cropperSelection.height = fileItem.cropConfig.selection.height;
-        cropperImage.$setTransform(...fileItem.cropConfig.transform);
-        // 切抜き
-        const canvas = await cropperSelection.$toCanvas();
-        // 正常終了：後片付け
-        tempCropper.destroy();
-        document.body.removeChild(container);
-        resolve(canvas);
-      } catch (err) {
-        // 処理中の予期せぬエラー
-        // 作業用の要素を削除する
-        if (container.parentNode) document.body.removeChild(container);
-        // エラーを返してawaitで待っているプログラムが止まらないようにする
-        reject(err);
-      }
-    };
-
-    // 切抜き画像の読み込み開始
-    img.src = fileItem.previewUrl;
-  });
+    // ロジックの実行（performCroppingへ委譲）
+    return await performCropping(img, fileItem.cropConfig);
+  } finally {
+    // 後片付け（副作用）
+    if (container.parentNode) document.body.removeChild(container);
+  }
 };
 
 const processAll = async () => {
