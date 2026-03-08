@@ -57,3 +57,31 @@ export const canvasToBlob = (canvas, type = "image/png", quality = 1.0) => {
     );
   });
 };
+
+/**
+ * @typedef {Object} CanvasItem
+ * @property {string} name - 元のファイル名（拡張子付き）
+ * @property {HTMLCanvasElement} canvas - 処理済みのCanvas要素
+ */
+
+/**
+ * 1つのCanvasアイテムを、ZIP保存用のデータ構造（Blobと新しい拡張子のファイル名）に変換する
+ * 
+ * @param {CanvasItem} canvasItem - 変換対象のCanvasと名前のセット
+ * @param {string} [type="image/png"] - 出力する画像のMIMEタイプ
+ * @returns {Promise<{name: string, blob: Blob}>} ZIPに追加するためのファイル名とBlobのオブジェクト
+ */
+export const convertToZipItem = async (canvasItem, type = "image/png") => {
+  // 1. 指定された形式でBlobに変換（前述のutilsを使用）
+  const blob = await canvasToBlob(canvasItem.canvas, type);
+
+  // 2. MIMEタイプから拡張子を決定 (例: "image/jpeg" -> "jpg")
+  // ※PNGの場合はそのまま "png"、JPEGの場合は "jpg" に変換する
+  let extension = type.split("/")[1];
+  if (extension === "jpeg") extension = "jpg";
+
+  // 3. 元の拡張子を除去して新しい拡張子を付ける
+  const fileName = `${canvasItem.name.replace(/\.[^/.]+$/, "")}.${extension}`;
+
+  return { name: fileName, blob };
+};
