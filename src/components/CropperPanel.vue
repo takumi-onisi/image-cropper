@@ -5,7 +5,8 @@ import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import Cropper from "cropperjs";
-import { performCropping } from "../utils/imageProcessor";
+import { performCropping, convertToZipItem } from "../utils/imageProcessor";
+import { downloadFilesAsZip } from "../utils/zip";
 
 const imageStore = useImagesStore();
 const imageElement = useTemplateRef("imageElement");
@@ -150,8 +151,16 @@ const processAll = async () => {
 
   console.log("全件の処理が完了しました", processedCanvases);
 
-  // ZIP化を実行
-  await downloadAsZip(processedCanvases);
+  // ファイル形式（将来的にユーザー設定等から取得することを想定）
+  const exportType = "image/png";
+  // Canvasの配列をZIP用のデータ配列に変換
+  const zipFilePromises = processedCanvases.map((item) =>
+    convertToZipItem(item, exportType),
+  );
+  const zipFiles = await Promise.all(zipFilePromises);
+
+  // ZIP化してダウンロード
+  await downloadFilesAsZip(zipFiles);
   // メモリ解放：Canvas要素は巨大なので使い終わったらクリアするのが安全
   processedCanvases.forEach((item) => {
     item.canvas.width = 0;
