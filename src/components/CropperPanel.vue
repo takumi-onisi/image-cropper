@@ -221,8 +221,4 @@ watch(
   display: block;
   max-width: 100%;
 }
-/* 画像の上で移動用ポインターを表示 */
-cropper-image[action="move"] {
-  cursor: move; /* 十字矢印のポインター */
-}
 </style>
