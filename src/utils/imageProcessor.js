@@ -8,28 +8,38 @@ import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
  * @returns {Promise<HTMLCanvasElement>} 切り抜かれたCanvas要素
  */
 export async function performCropping(imgElement, cropConfig) {
-  // Cropperのインスタンス生成
   const tempCropper = new Cropper(imgElement, { template: CROPPER_TEMPLATE });
-
-  // 準備完了を待機
   await tempCropper.getCropperImage().$ready();
 
   const selection = tempCropper.getCropperSelection();
   const image = tempCropper.getCropperImage();
 
-  // 設定の適用
+  // 1. まず、画像と選択範囲の状態を完全に復元する
+  image.$setTransform(...cropConfig.transform);
   selection.x = cropConfig.selection.x;
   selection.y = cropConfig.selection.y;
   selection.width = cropConfig.selection.width;
   selection.height = cropConfig.selection.height;
-  image.$setTransform(...cropConfig.transform);
 
-  // 切り抜き実行
-  const canvas = await selection.$toCanvas();
+  // 2. 復元後の正しい表示幅から比率を出す
+  const zoomScale = cropConfig.transform[0];
+  const baseImageWidth = cropConfig.baseSize.width;
+  const currentDisplayedWidth = baseImageWidth * zoomScale;
+  
+  // selection.width は「表示上のサイズ」なので、これに対して
+  // 「オリジナル画像幅 / 現在の表示幅」を掛ければオリジナルサイズに戻る
+  const ratio = imgElement.naturalWidth / currentDisplayedWidth;
+  
+  const targetWidth = selection.width * ratio;
+  const targetHeight = selection.height * ratio;
 
-  // 後片付け
+  // 3. 【重要】計算したサイズを明示的に渡す
+  const canvas = await selection.$toCanvas({
+    width: Math.round(targetWidth),
+    height: Math.round(targetHeight)
+  });
+
   tempCropper.destroy();
-
   return canvas;
 }
 
@@ -66,7 +76,7 @@ export const canvasToBlob = (canvas, type = "image/png", quality = 1.0) => {
 
 /**
  * 1つのCanvasアイテムを、ZIP保存用のデータ構造（Blobと新しい拡張子のファイル名）に変換する
- * 
+ *
  * @param {CanvasItem} canvasItem - 変換対象のCanvasと名前のセット
  * @param {string} [type="image/png"] - 出力する画像のMIMEタイプ
  * @returns {Promise<{name: string, blob: Blob}>} ZIPに追加するためのファイル名とBlobのオブジェクト
