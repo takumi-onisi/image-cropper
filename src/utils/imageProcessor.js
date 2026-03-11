@@ -8,36 +8,44 @@ import { CROPPER_TEMPLATE } from "../constants/cropperTemplate";
  * @returns {Promise<HTMLCanvasElement>} 切り抜かれたCanvas要素
  */
 export async function performCropping(imgElement, cropConfig) {
+  // 1. 一時インスタンス生成
   const tempCropper = new Cropper(imgElement, { template: CROPPER_TEMPLATE });
   await tempCropper.getCropperImage().$ready();
 
   const selection = tempCropper.getCropperSelection();
   const image = tempCropper.getCropperImage();
 
-  // 1. まず、画像と選択範囲の状態を完全に復元する
+  // 2. 設定の復元（行列 → セレクションの順に適用）
   image.$setTransform(...cropConfig.transform);
   selection.x = cropConfig.selection.x;
   selection.y = cropConfig.selection.y;
   selection.width = cropConfig.selection.width;
   selection.height = cropConfig.selection.height;
 
-  // 2. 復元後の正しい表示幅から比率を出す
+  // 3. 【核心】ズーム倍率の逆数からスケール係数(S)を導出
+  // zoomScale(a) = 表示幅 / オリジナル幅
+  // つまり、オリジナル幅に戻すには 1 / zoomScale を掛ける
   const zoomScale = cropConfig.transform[0];
-  const baseImageWidth = cropConfig.baseSize.width;
-  const currentDisplayedWidth = baseImageWidth * zoomScale;
-  
-  // selection.width は「表示上のサイズ」なので、これに対して
-  // 「オリジナル画像幅 / 現在の表示幅」を掛ければオリジナルサイズに戻る
-  const ratio = imgElement.naturalWidth / currentDisplayedWidth;
-  
-  const targetWidth = selection.width * ratio;
-  const targetHeight = selection.height * ratio;
+  const S = 1 / zoomScale;
 
-  // 3. 【重要】計算したサイズを明示的に渡す
+  // 4. オリジナルサイズを計算
+  const targetWidth = Math.round(cropConfig.selection.width * S);
+  const targetHeight = Math.round(cropConfig.selection.height * S);
+
+  console.log("--- デバッグ情報 ---");
+  console.log("zoomScale:", zoomScale);
+  console.log("Scale Factor (S):", S);
+  console.log("Config Selection:", cropConfig.selection);
+  console.log("Target Pixels:", { targetWidth, targetHeight });
+  console.log("Original Size:", { w: imgElement.naturalWidth, h: imgElement.naturalHeight });
+
+  // 5. 切り抜き実行（ここで計算値を強制適用）
   const canvas = await selection.$toCanvas({
-    width: Math.round(targetWidth),
-    height: Math.round(targetHeight)
+    width: targetWidth,
+    height: targetHeight
   });
+
+  console.log("最終出力サイズ:", { w: canvas.width, h: canvas.height });
 
   tempCropper.destroy();
   return canvas;
