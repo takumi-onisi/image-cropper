@@ -34,6 +34,21 @@ export const useImagesStore = defineStore("images", () => {
     fileList.value = []; // ファイルリストをクリア
   };
 
+  // 渡された画像の切り抜き設定を返す
+  const getFileCropConfig = computed(() => (previewUrl) => {
+    const file = fileList.value.find((f) => f.previewUrl === previewUrl);
+    const targetConfig = file?.cropConfig || globalConfig.value;
+
+    return {
+      ...targetConfig,
+      selection: { ...targetConfig.selection },
+      transform: [...targetConfig.transform],
+    };
+  });
+
+  // グローバル設定のコピーを返す。(読み取り専用)
+  const getGlobalConfig = computed(() => ({ ...globalConfig.value }));
+
   const setGlobalConfig = (config) => {
     // 渡されたconfigが必要な要件を満たしていることを確認
     assertCropConfig(config);
