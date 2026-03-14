@@ -120,8 +120,10 @@ const generateCanvas = async (fileItem) => {
       img.src = fileItem.previewUrl; // 画像の読み込み開始
     });
 
+    // ファイルに適用される切り抜き用設定を取得
+    const cropConfig = imageStore.getFileCropConfig(fileItem.previewUrl);
     // ロジックの実行（performCroppingへ委譲）
-    return await performCropping(img, fileItem.cropConfig);
+    return await performCropping(img, cropConfig);
   } finally {
     // 後片付け（副作用）
     if (container.parentNode) document.body.removeChild(container);
