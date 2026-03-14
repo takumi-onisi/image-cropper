@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { assertCropConfig } from "../utils/assertions";
 
 export const useImagesStore = defineStore("images", () => {
@@ -59,22 +59,29 @@ export const useImagesStore = defineStore("images", () => {
     // グローバル設定(マスター)を更新
     globalConfig.value.selection = newSelection;
     globalConfig.value.transform = newTransform;
+  };
 
-    // 画像それぞれに切り抜き用の設定を持たせる
-    fileList.value.forEach((file) => {
-      // 1つのファイルの切り抜き設定を編集しても他のファイルに影響が出ないようにする。
+  // 個別設定用のメソッド
+  const setFileConfig = (previewUrl, config) => {
+    // 1. バリデーション（テストでチェックすべき項目）
+    if (!assertCropConfig(config)) return;
+
+    const file = fileList.value.find((f) => f.previewUrl === previewUrl);
+    if (file) {
       file.cropConfig = {
-        selection: { ...newSelection },
-        transform: [...newTransform],
-        isModified: false,
+        selection: { ...config.selection },
+        transform: [...config.transform],
       };
-    });
+    }
   };
 
   return {
     fileList,
     addFiles,
     clearFiles,
+    getFileCropConfig,
+    getGlobalConfig,
     setGlobalConfig,
+    setFileConfig,
   };
 });
