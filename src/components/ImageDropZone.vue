@@ -54,6 +54,7 @@ const clearFiles = () => {
       <!-- ファイル選択用 input -->
       <div class="file-select-container">
         <input
+          id="file-upload"
           type="file"
           ref="fileInput"
           multiple
