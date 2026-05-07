@@ -54,6 +54,7 @@ const clearFiles = () => {
       <!-- ファイル選択用 input -->
       <div class="file-select-container">
         <input
+          id="file-upload"
           type="file"
           ref="fileInput"
           multiple
@@ -123,6 +124,11 @@ const clearFiles = () => {
   border-radius: 4px;
   margin: 15px 0;
   transition: background-color 0.2s;
+}
+
+/* アクティブ時（クリックした時） */
+.custom-file-upload:active {
+  background-color: #004085;
 }
 
 .limit-info {
