@@ -126,6 +126,11 @@ const clearFiles = () => {
   transition: background-color 0.2s;
 }
 
+/* アクティブ時（クリックした時） */
+.custom-file-upload:active {
+  background-color: #004085;
+}
+
 .limit-info {
   font-size: var(--font-size-base);
   line-height: 1.6;
