@@ -89,6 +89,17 @@ watch(
     }
   },
 );
+
+const handleApplyPreset = (newConfig) => {
+  if (!newConfig) return;
+
+  // 参照を壊さないように、現在の localConfig.value に対して中身を上書きマージする
+  Object.assign(localConfig.value, newConfig);
+
+  // 縦横比固定モード(RATIO)のプリセットだった場合、
+  // プロパティバー側のチェックボックス(isRatioFixed)も連動させる
+  isRatioFixed.value = newConfig.mode === CROP_MODES.RATIO;
+};
 </script>
 
 <template>
@@ -114,7 +125,10 @@ watch(
       </div>
     </div>
 
-    <ConfigPresetManager :local-config="localConfig" class="preset-trigger"
+    <ConfigPresetManager
+      :local-config="localConfig"
+      class="preset-trigger"
+      @apply-preset="handleApplyPreset"
       >設定の保存と読込</ConfigPresetManager
     >
   </div>
