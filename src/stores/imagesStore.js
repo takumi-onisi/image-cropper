@@ -22,7 +22,7 @@ export const useImagesStore = defineStore("images", () => {
   const individualCropConfig = ref(createCropConfig());
   const individualExportSettings = ref(createExportSettings());
   // individualCropConfigの対象となるファイルを識別するために使用
-  const activePreviewUrl = ref(null);
+  const individualTargetUrl = ref(null);
 
   // 個別切り抜き設定のモードの状態を保持
   const isIndividualMode = ref(false);
@@ -197,7 +197,7 @@ export const useImagesStore = defineStore("images", () => {
   // 渡された画像の切り抜き設定を返す
   const getFileCropConfig = computed(() => (previewUrl) => {
     // 個別切り抜き設定中の時
-    if (previewUrl === activePreviewUrl.value) {
+    if (previewUrl === individualTargetUrl.value) {
       return createCropConfig(individualCropConfig.value);
     }
 
@@ -211,7 +211,7 @@ export const useImagesStore = defineStore("images", () => {
   // 渡された画像の書き出し設定を返す
   const getExportSettings = computed(() => (previewUrl) => {
     // 個別切り抜き設定中の時
-    if (previewUrl === activePreviewUrl.value) {
+    if (previewUrl === individualTargetUrl.value) {
       return { ...individualExportSettings.value };
     }
 
@@ -249,7 +249,7 @@ export const useImagesStore = defineStore("images", () => {
     // 渡されたconfigが必要な要件を満たしていることを確認
     assertCropConfig(config);
 
-    if (previewUrl !== activePreviewUrl.value) return;
+    if (previewUrl !== individualTargetUrl.value) return;
 
     // 個別設定の値を更新
     Object.assign(
@@ -304,7 +304,7 @@ export const useImagesStore = defineStore("images", () => {
   };
 
   const setIndividualExportSettings = (previewUrl, settings) => {
-    if (previewUrl !== activePreviewUrl.value) return;
+    if (previewUrl !== individualTargetUrl.value) return;
 
     Object.assign(
       individualExportSettings.value,
@@ -317,10 +317,10 @@ export const useImagesStore = defineStore("images", () => {
 
   // 個別切り抜き設定の値を保存
   const commitIndividualEdit = (previewUrl) => {
-    if (previewUrl !== activePreviewUrl.value) return;
+    if (previewUrl !== individualTargetUrl.value) return;
 
     const file = fileList.value.find(
-      (f) => f.previewUrl === activePreviewUrl.value,
+      (f) => f.previewUrl === individualTargetUrl.value,
     );
 
     if (file) {
@@ -336,7 +336,7 @@ export const useImagesStore = defineStore("images", () => {
 
   const prepareIndividualEdit = (previewUrl) => {
     const file = fileList.value.find((f) => f.previewUrl === previewUrl);
-    activePreviewUrl.value = previewUrl;
+    individualTargetUrl.value = previewUrl;
 
     // 現在の値をコピーして「編集用」に入れる
     if (file?.cropConfig) {
@@ -354,7 +354,7 @@ export const useImagesStore = defineStore("images", () => {
   };
 
   const resetIndividualEditState = () => {
-    activePreviewUrl.value = null;
+    individualTargetUrl.value = null;
     // 初期値（globalConfigの内容）をセット
     individualCropConfig.value = createCropConfig(globalConfig.value);
     individualExportSettings.value = createExportSettings(globalExportSettings);
