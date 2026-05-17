@@ -23,11 +23,9 @@ const loadPresetsFromStorage = () => {
 
 // 現在の設定を保存
 const handleSave = () => {
-  if (!newPresetName.value.trim()) return;
-
   const newPreset = {
     id: Date.now(),
-    name: newPresetName.value,
+    name: newPresetName.value ? newPresetName.value : "",
     config: JSON.parse(JSON.stringify(props.localConfig)), // ディープコピー
   };
 
@@ -75,11 +73,7 @@ onMounted(loadPresetsFromStorage);
             <div class="config-preview">
               <CropConfigEditor v-model="props.localConfig" variant="compact" />
             </div>
-            <button
-              @click="handleSave"
-              :disabled="!newPresetName"
-              class="btn-save"
-            >
+            <button @click="handleSave" class="btn-save">
               現在の設定を保存
             </button>
           </div>
