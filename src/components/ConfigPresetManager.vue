@@ -290,4 +290,9 @@ button {
   border-color: #ff4d4f;
   color: white; /* ホバーした時だけ真っ赤にして強い警告にする */
 }
+@media (max-width: 768px) {
+  .config-main-content {
+    flex-direction: column;
+  }
+}
 </style>
