@@ -129,7 +129,7 @@ const handleApplyPreset = (newConfig) => {
       :local-config="localConfig"
       class="preset-trigger"
       @apply-preset="handleApplyPreset"
-      >設定の保存と読込</ConfigPresetManager
+      >保存 / 読込</ConfigPresetManager
     >
   </div>
 </template>

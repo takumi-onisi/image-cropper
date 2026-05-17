@@ -203,7 +203,6 @@ const inputY = computed({
   color: #333;
   width: fit-content;
   max-width: 100%;
-  margin-inline: auto;
 }
 
 .property-group {
