@@ -148,10 +148,12 @@ const inputY = computed({
         <div class="input-group">
           <label>幅 :</label>
           <input type="number" v-model.number="localConfig.targetSize.width" />
+          <span class="unit">px</span>
         </div>
         <div class="input-group">
           <label>高さ :</label>
           <input type="number" v-model.number="localConfig.targetSize.height" />
+          <span class="unit">px</span>
         </div>
       </div>
     </div>
@@ -160,12 +162,12 @@ const inputY = computed({
       <div class="input-group">
         <label>X :</label>
         <input type="number" v-model.number="inputX" />
-        <span class="unit" v-if="variant === 'full'">px</span>
+        <span class="unit">px</span>
       </div>
       <div class="input-group">
         <label>Y :</label>
         <input type="number" v-model.number="inputY" />
-        <span class="unit" v-if="variant === 'full'">px</span>
+        <span class="unit">px</span>
       </div>
       <div class="input-group">
         <label>幅 :</label>
@@ -174,7 +176,7 @@ const inputY = computed({
           v-model.number="displaySelection.width"
           :disabled="localConfig.mode === CROP_MODES.FIXED_SIZE"
         />
-        <span class="unit" v-if="variant === 'full'">px</span>
+        <span class="unit">px</span>
       </div>
       <div class="input-group">
         <label>高さ :</label>
@@ -183,7 +185,7 @@ const inputY = computed({
           v-model.number="displaySelection.height"
           :disabled="localConfig.mode === CROP_MODES.FIXED_SIZE"
         />
-        <span class="unit" v-if="variant === 'full'">px</span>
+        <span class="unit">px</span>
       </div>
     </div>
   </div>
