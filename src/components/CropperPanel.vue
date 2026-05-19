@@ -30,14 +30,16 @@ const initCropper = () => {
   if (cropper) cropper.destroy();
   if (!imageElement.value) return;
 
+  isInternalSync = true;
+
   cropper = new Cropper(imageElement.value, { template: CROPPER_TEMPLATE });
-  // 切り抜き設定を反映
-  const config = imagesStore.getFileCropConfig(props.image.previewUrl);
-  applyConfigToCropper(cropper, config);
+
+  const cropperSelection = cropper.getCropperSelection();
+  const cropperImage = cropper.getCropperImage();
 
   // Cropper側の変更をストアに送る
   const syncToStore = () => {
-    if (isInternalSync) return; // watch経由の更新なら無視する
+    if (isInternalSync) return; // ロック中は更新を行わない
 
     const context = getTransformationContext(cropper);
     const selection = cropper.getCropperSelection();
@@ -52,15 +54,27 @@ const initCropper = () => {
 
     // ストアへの反映完了後にフラグを下ろす
     nextTick(() => {
-      isInternalSync = false;
+      isInternalSync = false; // ロックを解除
     });
   };
-  const cropperSelection = cropper.getCropperSelection();
-  const cropperImage = cropper.getCropperImage();
+
   cropperSelection.addEventListener("change", onCropperSelectionChange);
   cropperImage.addEventListener("transform", onCropperImageTransform);
   cropperSelection.addEventListener("change", syncToStore);
   cropperImage.addEventListener("transform", syncToStore);
+
+  // cropperインスタンスが画像を読み込みが完了（ready）したタイミングでロックを解除する
+  cropperImage.$ready(() => {
+    // 画像の準備ができてから、過去の切り抜き設定を反映させる
+    const config = imagesStore.getFileCropConfig(props.image.previewUrl);
+    applyConfigToCropper(cropper, config);
+
+    // 設定の反映によって発生する一連の非同期イベント（change/transform）が
+    // ブラウザ側ですべて吐き出され、落ち着くのを待ってからロックを解除する
+    setTimeout(() => {
+      isInternalSync = false;
+    }, 50); // 念のためミリ秒単位の安全マージン（nextTickより確実に反映を待つ）
+  });
 };
 
 /**
