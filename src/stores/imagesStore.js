@@ -3,6 +3,7 @@ import { ref, computed, nextTick } from "vue";
 import { assertCropConfig } from "../utils/assertions";
 import {
   GLOBAL_PREVIEW_ID,
+  LOCAL_STORAGE_KEY_GLOBAL_CONFIG,
   DEFAULT_CROP_CONFIG,
 } from "../constants/cropConfig";
 import { DEFAULT_EXPORT_SETTINGS } from "../constants/exportSettings";
@@ -16,7 +17,7 @@ import { fetchFileFromUrl } from "../utils/imageProcessor";
 
 export const useImagesStore = defineStore("images", () => {
   const fileList = ref([]);
-  const globalConfig = ref(createCropConfig());
+  const globalConfig = ref(loadGlobalConfig());
   const globalExportSettings = ref(createExportSettings());
   // 個別設定の一時的な保持に使用
   const individualCropConfig = ref(createCropConfig());
@@ -243,6 +244,19 @@ export const useImagesStore = defineStore("images", () => {
         ...config,
       }),
     );
+
+    // 更新された最新の値を localStorage に保存する
+    try {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY_GLOBAL_CONFIG,
+        JSON.stringify(globalConfig.value),
+      );
+    } catch (e) {
+      console.error(
+        "グローバル設定のローカルストレージへの保存に失敗しました:",
+        e,
+      );
+    }
   };
 
   const setIndividualCropConfig = (previewUrl, config) => {
@@ -389,6 +403,27 @@ export const useImagesStore = defineStore("images", () => {
         ? [...base.transform]
         : [...DEFAULT_CROP_CONFIG.transform],
     };
+  }
+
+  // 💡 グローバル設定をストレージから読み込んで初期化する専用関数
+  function loadGlobalConfig() {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY_GLOBAL_CONFIG);
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // 💡 ストレージにデータがあれば、それをベースにして安全にオブジェクトを生成
+        return createCropConfig(parsed);
+      } catch (e) {
+        console.error(
+          "グローバル設定のパースに失敗しました。デフォルト値を使用します:",
+          e,
+        );
+      }
+    }
+
+    // ストレージにデータがない、またはパースエラーの場合は完全なデフォルト値を返す
+    return createCropConfig();
   }
 
   function createExportSettings(base = {}) {

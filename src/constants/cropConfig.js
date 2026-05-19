@@ -3,6 +3,8 @@ import { EXPORT_TYPES } from "./exportTypes";
 
 export const GLOBAL_PREVIEW_ID = "GLOBAL_DEFAULT_PREVIEW_MASTER";
 
+export const LOCAL_STORAGE_KEY_GLOBAL_CONFIG = "crop_tool_global_config";
+
 export const DEFAULT_CROP_CONFIG = {
   mode: CROP_MODES.FREE,
   ratio: { width: null, height: null },
